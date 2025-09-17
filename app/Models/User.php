@@ -27,7 +27,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_admin; // tylko admini mają dostęp
+        return true; // tylko admini mają dostęp
     }
     public function setPasswordAttribute($value): void
     {

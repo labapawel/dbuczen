@@ -45,4 +45,11 @@ class AuthenticatedSessionController extends Controller
 
         return redirect('/');
     }
+
+    protected $redirectTo = '/admin'; 
+
+    public function __construct()
+    {
+        $this->middleware('guest')->except('logout');
+    }
 }

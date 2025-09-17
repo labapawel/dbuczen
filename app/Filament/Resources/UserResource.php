@@ -67,6 +67,12 @@ class UserResource extends Resource
         ];
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->is_admin;
+    }
+
+
     public static function getPages(): array
     {
         return [
