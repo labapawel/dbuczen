@@ -11,8 +11,11 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\SoftDeletingScop;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\Checkbox;
+use Filament\Tables\Columns\IconColumn;
 
 class UserResource extends Resource
 {
@@ -26,8 +29,8 @@ class UserResource extends Resource
             ->schema([
                 TextInput::make('name')->required()->maxLength(255),
                 TextInput::make('email')->email()->required()->maxLength(255),
-                TextInput::make('password')->password()->required()->maxLength(255)
-                ->password()
+                TextInput::make('password')->password()->required()->maxLength(255)->password(),
+                Checkbox::make('is_admin')->label('Admin')->default(0),
             ]);
     }
 
@@ -41,7 +44,11 @@ class UserResource extends Resource
                 ->label('Password')
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('is_admin')
+                ->options([
+                    1 => 'Admin',
+                    0 => 'User',
+                ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
