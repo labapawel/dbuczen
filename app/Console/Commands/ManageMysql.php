@@ -11,6 +11,7 @@ class DbManage extends Command
         {action : add-user|change-pass|delete-user|add-db|change-db-pass|delete-db}
         {name : nazwa usera albo bazy (np. user, user_baza1)}
         {password? : hasło (opcjonalnie)}
+        {dbName? : nazwa bazy (opcjonalnie, potrzebna dla add-user-with-db)}
         {driver? : mysql|pgsql (opcjonalne, jeśli dotyczy bazy)}';
 
     protected $description = 'Zarządzanie użytkownikami i bazami w MySQL i PostgreSQL';
@@ -37,6 +38,10 @@ class DbManage extends Command
                 break;
             case 'add-db':
                 $this->addDatabase($mysql, $pgsql, $name, $password, $driver);
+                break;
+            case 'add-user-with-db': // <-- nowa akcja
+                $dbName = $this->argument('dbName');
+                $this->addUserWithDb($mysql, $pgsql, $name, $dbName, $password, $driver);
                 break;
             case 'change-db-pass':
                 $this->changeDbPass($mysql, $pgsql, $name, $password, $driver);
@@ -87,6 +92,41 @@ class DbManage extends Command
         $this->info("Dodano usera $user i bazę $dbName z dostępem dla $mainUser w " . ($driver ?? 'MySQL + PostgreSQL') . ".");
     }
 
+    private function addUserWithDb($mysql, $pgsql, $user, $dbName, $password, $driver = null)
+{
+    $mainUser = explode('_', $user)[0]; // prefix = główny user
+
+    if ($driver === 'mysql' || $driver === null) {
+        $mysql->unprepared("
+            CREATE DATABASE IF NOT EXISTS `$dbName`;
+            CREATE USER IF NOT EXISTS '$user'@'%' IDENTIFIED BY '$password';
+            GRANT ALL PRIVILEGES ON `$dbName`.* TO '$user'@'%';
+            GRANT ALL PRIVILEGES ON `$dbName`.* TO '$mainUser'@'%';
+            FLUSH PRIVILEGES;
+        ");
+    }
+
+    if ($driver === 'pgsql' || $driver === null) {
+        // 1. Tworzenie roli
+        $pgsql->unprepared("
+            DO \$\$
+            BEGIN
+                IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '$user') THEN
+                    CREATE ROLE \"$user\" LOGIN PASSWORD '$password';
+                END IF;
+            END
+            \$\$;
+        ");
+
+        // 2. Tworzenie bazy
+        $pgsql->unprepared("CREATE DATABASE \"$dbName\" OWNER \"$user\";");
+
+        // 3. Przywileje dla głównego użytkownika
+        $pgsql->unprepared("GRANT ALL PRIVILEGES ON DATABASE \"$dbName\" TO \"$mainUser\";");
+    }
+
+    $this->info("Dodano usera $user i bazę $dbName z dostępem dla $mainUser w " . ($driver ?? 'MySQL + PostgreSQL') . ".");
+}
     private function changePass($mysql, $pgsql, $user, $password, $driver = null)
     {
         if ($driver === 'mysql' || $driver === null) {

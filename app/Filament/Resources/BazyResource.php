@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\BazyResource\Pages;
 use App\Filament\Resources\BazyResource\RelationManagers;
 use App\Models\Bazy;
+use Filament\Tables\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -65,6 +66,13 @@ class BazyResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+
+                Action::make('login')
+                    ->label('Zaloguj')
+                    ->url(fn ($record) => $record->type === 'mysql'
+                        ? 'https://db.ptibb.edu.pl/phpmyadmin/'
+                        : 'https://db.ptibb.edu.pl/phppgadmin/')
+        ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

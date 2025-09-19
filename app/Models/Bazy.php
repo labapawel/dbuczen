@@ -49,14 +49,14 @@ class Bazy extends Model
             // data wygaśnięcia
             $baza->data_wygasniacia = now()->addDays(30);
         });
-
         static::created(function ($baza) {
-            // Tworzymy użytkownika + bazę (MySQL/Postgres)
+            // Tworzymy użytkownika + bazę (MySQL/Postgres) tylko dla dodatkowych baz
             Artisan::call('db:manage', [
-                'action'   => 'add-user',       // add-user = tworzy usera + bazę
-                'name'     => $baza->username,  // nazwa użytkownika
+                'action'   => 'add-user-with-db',   // nowa akcja
+                'name'     => $baza->username,      // nazwa usera z prefixem
                 'password' => $baza->password,
-                'driver'   => $baza->type,      // mysql lub postgre
+                'dbName'   => $baza->db,            // nazwa bazy z prefixem
+                'driver'   => $baza->type,
             ]);
         });
     }
