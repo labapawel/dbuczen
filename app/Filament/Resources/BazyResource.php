@@ -19,19 +19,46 @@ class BazyResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+
+    
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                //
-            ]);
+        ->schema([
+            Forms\Components\TextInput::make('username')
+                ->required()
+                ->label('Nazwa użytkownika')
+                ->unique(ignoreRecord: true)
+                ->maxlength(6),
+
+            Forms\Components\TextInput::make('db')
+                ->required()
+                ->label('Nazwa bazy danych')
+                ->maxlength(6),
+
+            Forms\Components\Select::make('type')
+                ->options([
+                    'mysql'   => 'MySQL',
+                    'postgre' => 'PostgreSQL',
+                ])
+                ->required(),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('username')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('password') // ← nowa kolumna
+                ->label('Hasło')
+                ->copyable() // można kliknąć i skopiować
+                ->toggleable(), // opcjonalnie żeby ukryć/rozwinąć
+                Tables\Columns\TextColumn::make('db'),
+                Tables\Columns\TextColumn::make('host'),
+                Tables\Columns\TextColumn::make('type'),
+                Tables\Columns\TextColumn::make('data_wygasniacia')->date(),
+                Tables\Columns\TextColumn::make('user.name')->label('User'),
             ])
             ->filters([
                 //
@@ -46,6 +73,7 @@ class BazyResource extends Resource
             ]);
     }
 
+    
     public static function getRelations(): array
     {
         return [

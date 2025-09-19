@@ -29,6 +29,11 @@ class User extends Authenticatable implements FilamentUser
     {
         return true; // tylko admini mają dostęp
     }
+
+    public function bazy()
+    {
+        return $this->hasMany(\App\Models\Bazy::class, 'user_id', 'id');
+    }
     public function setPasswordAttribute($value): void
     {
         if (!empty($value)) {
