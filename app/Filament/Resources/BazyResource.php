@@ -53,7 +53,7 @@ class BazyResource extends Resource
             Forms\Components\Select::make('type')
                 ->options([
                     'mysql'   => 'MySQL',
-                    'postgre' => 'PostgreSQL',
+                    'pgsql' => 'PostgreSQL',
                 ])
                 ->required(),
         ]);
