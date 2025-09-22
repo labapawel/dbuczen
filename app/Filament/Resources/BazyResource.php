@@ -21,6 +21,10 @@ class BazyResource extends Resource
     protected static ?string $model = Bazy::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $title = 'Bazy Danych';
+    protected static ?string $modelLabel = 'Baza Danych';
+    protected static ?string $pluralModelLabel = 'Bazy Danych';
+    protected static ?string $navigationLabel = 'Bazy Danych';
 
     public static function getEloquentQuery(): Builder
     {
