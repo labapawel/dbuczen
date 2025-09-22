@@ -22,7 +22,14 @@ class BazyResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-
+    public static function getEloquentQuery(): Builder
+    {
+        if (auth()->user()->isAdmin()) {
+            return parent::getEloquentQuery();
+        }
+        return parent::getEloquentQuery()->where('user_id', auth()->id());
+    }
+    
     
     public static function form(Form $form): Form
     {

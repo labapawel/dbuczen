@@ -30,6 +30,10 @@ class User extends Authenticatable implements FilamentUser
         return true; // tylko admini mają dostęp
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->is_admin;
+    }
     public function bazy()
     {
         return $this->hasMany(\App\Models\Bazy::class, 'user_id', 'id');
