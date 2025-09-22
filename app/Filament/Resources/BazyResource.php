@@ -10,8 +10,10 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Illuminate\Support\Str;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Artisan; 
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class BazyResource extends Resource
@@ -56,7 +58,6 @@ class BazyResource extends Resource
                 ->copyable() // można kliknąć i skopiować
                 ->toggleable(), // opcjonalnie żeby ukryć/rozwinąć
                 Tables\Columns\TextColumn::make('db'),
-                Tables\Columns\TextColumn::make('host'),
                 Tables\Columns\TextColumn::make('type'),
                 Tables\Columns\TextColumn::make('data_wygasniacia')->date(),
                 Tables\Columns\TextColumn::make('user.name')->label('User'),
@@ -65,8 +66,41 @@ class BazyResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Action::make('generatePassword')
+                    ->label('Generuj nowe hasło')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        // 1. Generowanie nowego hasła
+                        $newPassword = Str::random(16);
 
+                        // 2. Zapisz w bazie Laravel
+                        $record->password = $newPassword;
+                        $record->save();
+
+                        // 3. Wywołanie komendy Artisan do zmiany hasła w DB
+                        Artisan::call('db:manage', [
+                            'action'   => 'change-db-pass',
+                            'name'     => $record->username,
+                            'password' => $newPassword,
+                            'driver'   => $record->type,
+                        ]);
+                    }),
+                    Action::make('deleteUserAndDb')
+                        ->label('Usuń')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->action(function ($record) {
+                        // Usuń usera i bazę w MySQL/Postgres
+                        Artisan::call('db:manage', [
+                            'action'  => 'delete-db',
+                            'name'    => $record->username,   // nazwa użytkownika np. naplet_coscot
+                            'dbName'  => $record->db,     // nazwa bazy np. naplet_321312
+                            'driver'  => $record->type,   // mysql / pgsql
+                        ]);
+                        // Usuń rekord z tabeli
+                            $record->delete();
+                        }),
                 Action::make('login')
                     ->label('Zaloguj')
                     ->url(fn ($record) => $record->type === 'mysql'

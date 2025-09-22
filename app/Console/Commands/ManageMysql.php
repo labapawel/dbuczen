@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+
+use app\Commands\Log;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -21,6 +23,7 @@ class DbManage extends Command
         $action   = $this->argument('action');
         $name     = $this->argument('name');
         $password = $this->argument('password');
+        $dbName = $this->argument('dbName');
         $driver   = $this->argument('driver'); // mysql lub pgsql
 
         $mysql = DB::connection('mysql');
@@ -47,7 +50,10 @@ class DbManage extends Command
                 $this->changeDbPass($mysql, $pgsql, $name, $password, $driver);
                 break;
             case 'delete-db':
-                $this->deleteDatabase($mysql, $pgsql, $name, $driver);
+                $user   = $name;
+                $dbName = $this->argument('dbName'); // jeśli nie podano dbName, użyj name jako nazwy bazy
+                $driver = $this->argument('driver');
+                $this->deleteDatabase($mysql, $pgsql, $dbName, $user, $driver);
                 break;
             default:
                 $this->error("Nieznana akcja: $action");
@@ -60,6 +66,7 @@ class DbManage extends Command
         $mainUser = explode('_', $user)[0]; // prefix przed "_" to główne konto
 
         if ($driver === 'mysql' || $driver === null) {
+            \Log::info("create mysql user $user $password with db $dbName ");
             $mysql->unprepared("
                 CREATE DATABASE IF NOT EXISTS `$dbName`;
                 CREATE USER IF NOT EXISTS '$user'@'%' IDENTIFIED BY '$password';
@@ -97,6 +104,7 @@ class DbManage extends Command
     $mainUser = explode('_', $user)[0]; // prefix = główny user
 
     if ($driver === 'mysql' || $driver === null) {
+        \Log::info("create mysql user $user $password with db $dbName ");
         $mysql->unprepared("
             CREATE DATABASE IF NOT EXISTS `$dbName`;
             CREATE USER IF NOT EXISTS '$user'@'%' IDENTIFIED BY '$password';
@@ -139,27 +147,31 @@ class DbManage extends Command
 
         $this->info("Zmieniono hasło dla $user w " . ($driver ?? 'MySQL + PostgreSQL') . ".");
     }
-
-    private function deleteUser($mysql, $pgsql, $user, $driver = null)
+    private function deleteUser($user, $dbName, $driver = null)
     {
-        $dbName = $user;
-
+        
+    try {
         if ($driver === 'mysql' || $driver === null) {
-            $mysql->unprepared("
+            DB::connection('mysql')->unprepared("
                 DROP DATABASE IF EXISTS `$dbName`;
                 DROP USER IF EXISTS '$user'@'%';
             ");
+            \Log::info("MySQL: Usunięto bazę $dbName i użytkownika $user.");
         }
 
         if ($driver === 'pgsql' || $driver === null) {
-            $pgsql->unprepared("REVOKE CONNECT ON DATABASE \"$dbName\" FROM PUBLIC;");
-            $pgsql->unprepared("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$dbName';");
-            $pgsql->unprepared("DROP DATABASE IF EXISTS \"$dbName\";");
-            $pgsql->unprepared("DROP ROLE IF EXISTS \"$user\";");
+            DB::connection('pgsql')->unprepared("REVOKE CONNECT ON DATABASE \"$dbName\" FROM PUBLIC;");
+            DB::connection('pgsql')->unprepared("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$dbName';");
+            DB::connection('pgsql')->unprepared("DROP DATABASE IF EXISTS \"$dbName\";");
+            DB::connection('pgsql')->unprepared("DROP ROLE IF EXISTS \"$user\";");
+            \Log::info("PostgreSQL: Usunięto bazę $dbName i użytkownika $user.");
         }
-
-        $this->info("Usunięto usera $user i jego bazę w " . ($driver ?? 'MySQL + PostgreSQL') . ".");
+    } catch (\Exception $e) {
+        // Logowanie błędów
+        \Log::error("Błąd przy usuwaniu usera $user i bazy $dbName: " . $e->getMessage());
     }
+    
+}
 
     private function addDatabase($mysql, $pgsql, $db, $password, $driver = null)
     {
@@ -209,24 +221,43 @@ class DbManage extends Command
         $this->info("Zmieniono hasło usera $user dla bazy $db w " . ($driver ?? 'MySQL + PostgreSQL') . ".");
     }
 
-    private function deleteDatabase($mysql, $pgsql, $db, $driver = null)
-    {
-        $user = $db;
-
-        if ($driver === 'mysql' || $driver === null) {
-            $mysql->unprepared("
-                DROP DATABASE IF EXISTS `$db`;
-                DROP USER IF EXISTS '$user'@'%';
-            ");
-        }
-
-        if ($driver === 'pgsql' || $driver === null) {
-            $pgsql->unprepared("REVOKE CONNECT ON DATABASE \"$db\" FROM PUBLIC;");
-            $pgsql->unprepared("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$db';");
-            $pgsql->unprepared("DROP DATABASE IF EXISTS \"$db\";");
-            $pgsql->unprepared("DROP ROLE IF EXISTS \"$user\";");
-        }
-
-        $this->info("Usunięto bazę $db i usera $user w " . ($driver ?? 'MySQL + PostgreSQL') . ".");
+    private function deleteDatabase($mysql, $pgsql, $dbName, $user, $driver = null)
+{
+    // Blokada dla systemowych baz danych MySQL
+    if (in_array($dbName, ['mysql', 'information_schema', 'performance_schema', 'sys'])) {
+        $this->error("Nie można usunąć systemowej bazy danych: $dbName");
+        return;
     }
+
+    // MySQL
+    if ($driver === 'mysql' || $driver === null) {
+        try {
+            $mysql->unprepared("DROP USER IF EXISTS '$user'@'%';");
+            $this->info("MySQL: Usunięto użytkownika $user");
+        } catch (\Exception $e) {
+            $this->error("MySQL: Błąd przy usuwaniu użytkownika $user: " . $e->getMessage());
+        }
+
+        try {
+            $mysql->unprepared("DROP DATABASE IF EXISTS `$dbName`;");
+            $this->info("MySQL: Usunięto bazę $dbName");
+        } catch (\Exception $e) {
+            $this->error("MySQL: Błąd przy usuwaniu bazy $dbName: " . $e->getMessage());
+        }
+    }
+
+    // PostgreSQL
+    if ($driver === 'pgsql' || $driver === null) {
+        try {
+            $pgsql->unprepared("REVOKE CONNECT ON DATABASE \"$dbName\" FROM PUBLIC;");
+            $pgsql->unprepared("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$dbName';");
+            $pgsql->unprepared("DROP DATABASE IF EXISTS \"$dbName\";");
+            $pgsql->unprepared("DROP ROLE IF EXISTS \"$user\";");
+            $this->info("PostgreSQL: Usunięto bazę $dbName i użytkownika $user");
+        } catch (\Exception $e) {
+            $this->error("PostgreSQL: Błąd przy usuwaniu bazy $dbName i użytkownika $user: " . $e->getMessage());
+        }
+    }
+}
+
 }

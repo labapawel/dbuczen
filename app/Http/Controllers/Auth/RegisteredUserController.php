@@ -40,9 +40,9 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
         ]);
-        
+
         Artisan::call('db:manage', [
             'action'   => 'add-user',
             'name'     => $user->name,
