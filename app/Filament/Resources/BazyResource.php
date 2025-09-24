@@ -70,6 +70,9 @@ class BazyResource extends Resource
                 ->toggleable(), // opcjonalnie żeby ukryć/rozwinąć
                 Tables\Columns\TextColumn::make('db'),
                 Tables\Columns\TextColumn::make('type'),
+                Tables\Columns\TextColumn::make('host')
+                    ->label('Host')              
+                    ->getStateUsing(fn ($record) => '10.40.60.165'),
                 Tables\Columns\TextColumn::make('data_wygasniacia')->date(),
                 Tables\Columns\TextColumn::make('user.name')->label('User'),
             ])
