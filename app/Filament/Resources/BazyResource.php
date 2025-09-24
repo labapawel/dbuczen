@@ -112,6 +112,16 @@ class BazyResource extends Resource
                         // Usuń rekord z tabeli
                             $record->delete();
                         }),
+                        Action::make('extendExpiry')
+    ->label('Przedłuż o 14 dni')
+    ->color('success')
+    ->requiresConfirmation()
+    ->action(function ($record) {
+        // Dodaj 14 dni
+        $record->data_wygasniacia = \Carbon\Carbon::parse($record->data_wygasniacia)->addDays(14);
+        $record->save();
+
+    }),
                 Action::make('login')
                     ->label('Zaloguj')
                     ->url(fn ($record) => $record->type === 'mysql'
