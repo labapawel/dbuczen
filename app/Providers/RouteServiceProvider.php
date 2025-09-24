@@ -7,6 +7,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -36,5 +37,16 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });
+        Route::post('/admin/logout', function () {
+            Auth::guard(config('filament.auth.guard'))->logout();
+        
+            // te linie działają tylko jeśli jesteśmy w middleware 'web'
+            session()->invalidate();
+            session()->regenerateToken();
+        
+            return redirect('/login');
+        })->name('filament.admin.auth.logout')
+          ->middleware(['web']);
     }
+
 }
