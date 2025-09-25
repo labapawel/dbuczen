@@ -27,7 +27,7 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')->required()->maxLength(255),
+                TextInput::make('name')->required()->maxLength(12),
                 TextInput::make('email')->email()->required()->maxLength(255),
                 TextInput::make('password')->password()->required()->maxLength(255)->password(),
                 Checkbox::make('is_admin')->label('Admin')->default(0),
@@ -40,8 +40,6 @@ class UserResource extends Resource
             ->columns([
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('email')->searchable()->sortable(),
-                TextColumn::make('password')
-                ->label('Password')
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('is_admin')
