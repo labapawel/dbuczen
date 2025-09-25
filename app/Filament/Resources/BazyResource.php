@@ -80,7 +80,9 @@ class BazyResource extends Resource
             ])
             ->actions([
                 Action::make('generatePassword')
-                    ->label('Generuj nowe hasło')
+                    ->label('')
+                    ->icon('heroicon-m-key')
+                    ->modalHeading('Generowanie nowego hasła')
                     ->color('warning')
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -100,8 +102,10 @@ class BazyResource extends Resource
                         ]);
                     }),
                     Action::make('deleteUserAndDb')
-                        ->label('Usuń')
+                    ->label('')
+                    ->icon('heroicon-m-trash')
                         ->color('danger')
+                        ->modalHeading('Usuwanie użytkownika i bazy')
                         ->requiresConfirmation()
                         ->action(function ($record) {
                         // Usuń usera i bazę w MySQL/Postgres
@@ -115,9 +119,11 @@ class BazyResource extends Resource
                             $record->delete();
                         }),
                         Action::make('extendExpiry')
-    ->label('Przedłuż o 14 dni')
+                        ->label('')
+                        ->icon('heroicon-m-clock') 
     ->color('success')
     ->requiresConfirmation()
+    ->modalHeading('Przedłużenie bazy o 14 dni')
     ->action(function ($record) {
         // Dodaj 14 dni
         $record->data_wygasniacia = \Carbon\Carbon::parse($record->data_wygasniacia)->addDays(14);
@@ -125,7 +131,8 @@ class BazyResource extends Resource
 
     }),
                 Action::make('login')
-                    ->label('Zaloguj')
+                ->label('')
+                ->icon('heroicon-m-arrow-right-on-rectangle') 
                     ->url(fn ($record) => $record->type === 'mysql'
                         ? 'https://db.ptibb.edu.pl/phpmyadmin/'
                         : 'https://db.ptibb.edu.pl/phppgadmin/')
