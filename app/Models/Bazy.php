@@ -47,7 +47,7 @@ class Bazy extends Model
             $baza->password = bin2hex(random_bytes(8));
 
             // data wygaśnięcia
-            $baza->data_wygasniacia = now(14);
+            $baza->data_wygasniacia = now()->addDays(14 );
         });
         static::created(function ($baza) {
             // Tworzymy użytkownika + bazę (MySQL/Postgres) tylko dla dodatkowych baz

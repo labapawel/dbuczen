@@ -14,6 +14,8 @@ use Illuminate\Support\Str;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Artisan; 
+use Illuminate\Support\Facades\Response;
+use Symfony\Component\Process\Process;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class BazyResource extends Resource
@@ -118,6 +120,51 @@ class BazyResource extends Resource
                         // Usuń rekord z tabeli
                             $record->delete();
                         }),
+                        Action::make('dumpDatabase')
+                            ->label('') // tylko ikona
+                            ->icon('heroicon-m-arrow-down-tray')
+                            ->color('info')
+                            ->requiresConfirmation()
+                            ->modalHeading('Eksport bazy')
+                            ->modalDescription('Ta akcja wyeksportuje całą bazę danych w formacie .sql i pobierze ją jako plik.')
+                            ->modalSubmitActionLabel('Pobierz .sql')
+                            ->action(function ($record) {
+                                $dbName = $record->db;
+                                $username = $record->username;
+                                $password = $record->password; // prawdziwe hasło do DB
+                                $driver = $record->type;
+                                $host = '10.40.60.165'; // Twój zdalny host
+                        
+                                // Tworzymy katalog, jeśli nie istnieje
+                                $exportPath = storage_path('app/exports');
+                                if (!file_exists($exportPath)) {
+                                    mkdir($exportPath, 0755, true);
+                                }
+                        
+                                $filePath = $exportPath . "/{$dbName}.sql";
+                        
+                                if ($driver === 'mysql') {
+                                    // MySQL zdalny host
+                                    $process = Process::fromShellCommandline(
+                                        "mysqldump -h {$host} -u{$username} -p{$password} {$dbName} > \"$filePath\""
+                                    );
+                                } else {
+                                    // PostgreSQL zdalny host
+                                    $process = Process::fromShellCommandline(
+                                        "PGPASSWORD={$password} pg_dump -h {$host} -U {$username} -d {$dbName} > \"$filePath\""
+                                    );
+                                }
+                        
+                                $process->run();
+                        
+                                if (! $process->isSuccessful()) {
+                                    throw new \Exception('Eksport bazy się nie powiódł: ' . $process->getErrorOutput());
+                                }
+                        
+                                // Zwracamy plik do pobrania i usuwamy po wysłaniu
+                                return Response::download($filePath)->deleteFileAfterSend(true);
+                            }),
+                        
                         Action::make('extendExpiry')
                         ->label('')
                         ->icon('heroicon-m-clock') 
