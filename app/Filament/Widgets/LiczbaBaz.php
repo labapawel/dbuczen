@@ -10,9 +10,14 @@ use Illuminate\Database\Eloquent\Builder;
 class LiczbaBaz extends BaseWidget
 {
 
-    
+    protected static ?int $sort = -4;
+
+    protected static bool $isLazy = false;
     protected int | string | array $columnSpan = 1; // zajmuje pełną szerokość
     protected int | string | array $rowSpan = 1;  // 1 wiersz wysokości
+
+    protected static string $view = 'filament.widgets.liczba-baz';
+
 
 
     protected function getStats(): array
@@ -38,10 +43,7 @@ class LiczbaBaz extends BaseWidget
         
         return [
             Stat::make($title, $totalBazyCount)
-            ->extraAttributes([
-                'style' => 'min-width:550px; height:100px',     // minimalna szerokość
-            ]),
-
+            
         ];
     }
 }
