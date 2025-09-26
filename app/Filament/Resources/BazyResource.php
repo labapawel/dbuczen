@@ -173,7 +173,7 @@ class BazyResource extends Resource
     ->modalHeading('Przedłużenie bazy o 14 dni')
     ->action(function ($record) {
         // Dodaj 14 dni
-        $record->data_wygasniacia = \Carbon\Carbon::parse($record->data_wygasniacia)->addDays(14);
+        $record->data_wygasniacia = \Carbon\Carbon::now()->addDays(14);
         $record->save();
 
     }),
