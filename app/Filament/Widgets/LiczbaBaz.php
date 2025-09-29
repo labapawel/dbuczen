@@ -39,7 +39,9 @@ class LiczbaBaz extends BaseWidget
         $totalBazyCount = $query->count();
         
         // 5. Ustawienie dynamicznego tytułu statystyki
-        $title = $isAdmin ? 'Całkowita liczba baz (Globalnie)' : 'Twoje bazy (Utworzone)';
+        $title = $isAdmin
+    ? __('filament.total_bases_globally')   // z pliku filament.php
+    : __('filament.your_bases_created');
         
         return [
             Stat::make($title, $totalBazyCount)

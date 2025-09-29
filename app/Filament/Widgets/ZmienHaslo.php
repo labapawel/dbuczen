@@ -18,6 +18,9 @@ class ZmienHaslo extends Widget implements HasForms
 
     protected static ?int $sort = 100;
 
+    // Tytuł widgetu, odwołanie do klucza w pliku filament.php
+    protected static ?string $heading = 'filament.password_change_widget_title';
+
     // Dopasowane do nazwy pliku Blade
     protected static string $view = 'filament.widgets.zmien-haslo';
 
@@ -29,19 +32,22 @@ class ZmienHaslo extends Widget implements HasForms
         return $form
             ->schema([
                 TextInput::make('stare_haslo')
-                    ->label('Aktualne hasło')
+                    // Tłumaczenie etykiety: filament.current_password
+                    ->label(__('filament.current_password'))
                     ->password()
                     ->required()
-                    ->currentPassword(), // Laravel sprawdza aktualne hasło
+                    ->currentPassword(),
 
                 TextInput::make('nowe_haslo')
-                    ->label('Nowe hasło')
+                    // Tłumaczenie etykiety: filament.new_password
+                    ->label(__('filament.new_password'))
                     ->password()
                     ->required()
                     ->rule(Password::min(8)),
 
                 TextInput::make('potwierdz_haslo')
-                    ->label('Potwierdź nowe hasło')
+                    // Tłumaczenie etykiety: filament.confirm_new_password
+                    ->label(__('filament.confirm_new_password'))
                     ->password()
                     ->required()
                     ->same('nowe_haslo'),
@@ -59,7 +65,8 @@ class ZmienHaslo extends Widget implements HasForms
         // Sprawdzenie aktualnego hasła
         if (!Hash::check($this->data['stare_haslo'], $user->password)) {
             Notification::make()
-                ->title('Aktualne hasło jest nieprawidłowe')
+                // Tłumaczenie tytułu notyfikacji: filament.notification_password_invalid
+                ->title(__('filament.notification_password_invalid'))
                 ->danger()
                 ->send();
             return;
@@ -70,7 +77,8 @@ class ZmienHaslo extends Widget implements HasForms
         $user->save();
 
         Notification::make()
-            ->title('Hasło zostało zmienione')
+            // Tłumaczenie tytułu notyfikacji: filament.notification_password_changed
+            ->title(__('filament.notification_password_changed'))
             ->success()
             ->send();
 

@@ -5,9 +5,12 @@
                 <div class="fi-wi-stats-overview-stat relative rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 h-24">
                     <div class="grid gap-y-2">
                         <div class="flex items-center gap-x-2">
-                            <span class="fi-wi-stats-overview-stat-label text-sm font-medium text-gray-500 dark:text-gray-400">
-                                {{ auth()->user()->isAdmin() ? 'Całkowita liczba baz (Globalnie)' : 'Twoje bazy (Utworzone)' }}
-                            </span>
+                        <span class="fi-wi-stats-overview-stat-label text-sm font-medium text-gray-500 dark:text-gray-400">
+    {{ auth()->user()->isAdmin() 
+        ? __('filament.total_bases_globally') 
+        : __('filament.your_bases_created') 
+    }}
+</span>
                         </div>
 
                         <div class="fi-wi-stats-overview-stat-value text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
