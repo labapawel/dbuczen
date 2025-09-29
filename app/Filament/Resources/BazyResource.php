@@ -84,6 +84,7 @@ class BazyResource extends Resource
                 Action::make('generatePassword')
                     ->label('')
                     ->icon('heroicon-m-key')
+                    ->tooltip('Generuj hasło')
                     ->modalHeading('Generowanie nowego hasła')
                     ->color('warning')
                     ->requiresConfirmation()
@@ -106,6 +107,7 @@ class BazyResource extends Resource
                     Action::make('deleteUserAndDb')
                     ->label('')
                     ->icon('heroicon-m-trash')
+                    ->tooltip('Usuń Baze i Użytkownika')
                         ->color('danger')
                         ->modalHeading('Usuwanie użytkownika i bazy')
                         ->requiresConfirmation()
@@ -123,6 +125,7 @@ class BazyResource extends Resource
                         Action::make('dumpDatabase')
                             ->label('') // tylko ikona
                             ->icon('heroicon-m-arrow-down-tray')
+                            ->tooltip('Pobierz .sql')
                             ->color('info')
                             ->requiresConfirmation()
                             ->modalHeading('Eksport bazy')
@@ -167,7 +170,8 @@ class BazyResource extends Resource
                         
                         Action::make('extendExpiry')
                         ->label('')
-                        ->icon('heroicon-m-clock') 
+                        ->icon('heroicon-m-clock')
+                        ->tooltip('Przedłuż ważność o 14 dni') 
     ->color('success')
     ->requiresConfirmation()
     ->modalHeading('Przedłużenie bazy o 14 dni')
@@ -179,6 +183,7 @@ class BazyResource extends Resource
     }),
                 Action::make('login')
                 ->label('')
+                ->tooltip('zaloguj')
                 ->icon('heroicon-m-arrow-right-on-rectangle') 
                     ->url(fn ($record) => $record->type === 'mysql'
                         ? 'https://db.ptibb.edu.pl/phpmyadmin/'
