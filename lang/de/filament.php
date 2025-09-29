@@ -39,4 +39,5 @@ return [
     'notification_password_changed' => 'Passwort wurde geändert',
     'change_password_toggle' => 'Passwort ändern', // Toggle button (Blade)
     'save_new_password' => 'Neues Passwort speichern',
+    'niewygasaj' => 'Nicht ablaufen',
 ];

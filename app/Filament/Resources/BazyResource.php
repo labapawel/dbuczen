@@ -15,6 +15,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Artisan; 
 use Illuminate\Support\Facades\Response;
+use Filament\Tables\Columns\CheckboxColumn;
 use Symfony\Component\Process\Process;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -95,7 +96,21 @@ class BazyResource extends Resource
                     ->getStateUsing(fn ($record) => '10.40.60.165'),
                 Tables\Columns\TextColumn::make('data_wygasniacia')
                     ->label(__('filament.expiry_date')) // PRZETŁUMACZONE
+                    ->formatStateUsing(fn ($state) => $state ?? '__-__-____')
                     ->date(),
+                    CheckboxColumn::make('expiry_reset')
+                    ->label(__('filament.niewygasaj'))
+                    ->visible(fn ($record) => auth()->user()->isAdmin())
+                    ->action(function ($record, $state) {
+                        if ($state) {
+                            // Zaznaczenie checkboxa → usuwa datę wygaśnięcia
+                            $record->expiry_date = null;
+                        } else {
+                            // Odznaczenie → ustawia +14 dni od teraz
+                            $record->expiry_date = Carbon::now()->addDays(14);
+                        }
+                        $record->save();
+                    }),
             ])
             ->filters([
                 //

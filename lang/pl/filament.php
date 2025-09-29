@@ -40,6 +40,7 @@ return [
 
     'change_password_toggle' => 'Zmień hasło', // Przycisk rozwijający (Blade)
     'save_new_password' => 'Zapisz nowe hasło', // Przycisk akcji zapisu (Blade)
+    'niewygasaj' => 'Nie wygasaj',
 
 
 ];
