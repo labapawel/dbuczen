@@ -42,5 +42,7 @@ return [
     'save_new_password' => 'Zapisz nowe hasło', // Przycisk akcji zapisu (Blade)
     'niewygasaj' => 'Nie wygasaj',
 
+    'username' => 'Nazwa użytkownika',
+    'database_name' => 'Nazwa bazy danych',
 
 ];

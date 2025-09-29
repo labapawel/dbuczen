@@ -40,4 +40,6 @@ return [
     'change_password_toggle' => 'Passwort ändern', // Toggle button (Blade)
     'save_new_password' => 'Neues Passwort speichern',
     'niewygasaj' => 'Nicht ablaufen',
+    'username' => 'Benutzername',
+    'database_name' => 'Datenbankname',
 ];

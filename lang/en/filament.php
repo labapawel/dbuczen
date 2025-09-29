@@ -40,4 +40,7 @@ return [
     'change_password_toggle' => 'Change Password', // Toggle button (Blade)
     'save_new_password' => 'Save New Password',
     'niewygasaj' => 'Do not expire',
+
+    'username' => 'Username',
+    'database_name' => 'Database Name',
 ];

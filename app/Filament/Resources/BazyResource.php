@@ -61,13 +61,13 @@ class BazyResource extends Resource
         ->schema([
             Forms\Components\TextInput::make('username')
                 ->required()
-                ->label('Nazwa użytkownika')
+                ->label(__('filament.username'))
                 ->unique(ignoreRecord: true)
                 ->maxlength(6),
 
             Forms\Components\TextInput::make('db')
                 ->required()
-                ->label('Nazwa bazy danych')
+                ->label(__('filament.database_name'))
                 ->maxlength(6),
 
             Forms\Components\Select::make('type')
@@ -96,18 +96,17 @@ class BazyResource extends Resource
                     ->getStateUsing(fn ($record) => '10.40.60.165'),
                 Tables\Columns\TextColumn::make('data_wygasniacia')
                     ->label(__('filament.expiry_date')) // PRZETŁUMACZONE
-                    ->formatStateUsing(fn ($state) => $state ?? '__-__-____')
                     ->date(),
-                    CheckboxColumn::make('expiry_reset')
+                    CheckboxColumn::make('niewygasa')
                     ->label(__('filament.niewygasaj'))
                     ->visible(fn ($record) => auth()->user()->isAdmin())
-                    ->action(function ($record, $state) {
+                    ->afterStateUpdated(function ($state, $record) {
                         if ($state) {
                             // Zaznaczenie checkboxa → usuwa datę wygaśnięcia
-                            $record->expiry_date = null;
+                            $record->data_wygasniacia = null;
                         } else {
                             // Odznaczenie → ustawia +14 dni od teraz
-                            $record->expiry_date = Carbon::now()->addDays(14);
+                            $record->data_wygasniacia = \Carbon\Carbon::now()->addDays(14);
                         }
                         $record->save();
                     }),
