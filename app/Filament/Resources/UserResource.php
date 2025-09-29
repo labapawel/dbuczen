@@ -29,7 +29,7 @@ class UserResource extends Resource
             ->schema([
                 TextInput::make('name')->required()->maxLength(12),
                 TextInput::make('email')->email()->required()->maxLength(255),
-                TextInput::make('password')->password()->required()->maxLength(255)->password(),
+                TextInput::make(__('filament.password'))->password()->required()->maxLength(255)->password(),
                 Checkbox::make('is_admin')->label('Admin')->default(0),
             ]);
     }
