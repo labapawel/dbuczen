@@ -83,16 +83,17 @@ class BazyResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('username')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('username')->sortable()->searchable()->copyable(),
                 Tables\Columns\TextColumn::make('password')
                     ->label(__('filament.password')) // PRZETŁUMACZONE
                     ->copyable()
-                    ->toggleable(),
+                    ->view('tables.columns.password-toggle'),
                 Tables\Columns\TextColumn::make('db'),
                 Tables\Columns\TextColumn::make('type')
                     ->label(__('filament.database_type')), // PRZETŁUMACZONE
                 Tables\Columns\TextColumn::make('host')
                     ->label('Host')
+                    ->copyable()
                     ->getStateUsing(fn ($record) => '10.40.60.165'),
                 Tables\Columns\TextColumn::make('data_wygasniacia')
                     ->label(__('filament.expiry_date')) // PRZETŁUMACZONE
