@@ -68,7 +68,8 @@ class BazyResource extends Resource
             Forms\Components\TextInput::make('db')
                 ->required()
                 ->label(__('filament.database_name'))
-                ->maxlength(6),
+                ->maxlength(6)
+                ->unique()(ignoreRecord: true),
 
             Forms\Components\Select::make('type')
                 ->options([
