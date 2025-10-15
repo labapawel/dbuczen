@@ -33,21 +33,24 @@ class Bazy extends Model
         static::creating(function ($baza) {
             $user = auth()->user();
 
-            // prefix tylko do username i db osobno
-            $baza->username = $user->name . '_' . $baza->username;
-            $baza->db       = $user->name . '_' . $baza->db;
-
-            // przypisanie user_id
+            // zmienne lokalne na początku
+            $baseUsername = $user->name . '_' . $baza->username;
+            $baseDb       = $user->name . '_' . $baza->db;
+        
+            // zapewnienie unikalności username
+            $counter = 1;
+            while (self::where('username', $baseUsername)->exists()) {
+                $baseUsername = $user->name . '_' . $baza->username . $counter++;
+            }
+        
+            // przypisanie do modelu
+            $baza->username = $baseUsername;
+            $baza->db       = $baseDb;
+        
             $baza->user_id = $user->id;
-
-            // host zawsze %
             $baza->host = '%';
-
-            // generowanie losowego hasła
             $baza->password = bin2hex(random_bytes(8));
-
-            // data wygaśnięcia
-            $baza->data_wygasniacia = now()->addDays(14 );
+            $baza->data_wygasniacia = now()->addDays(14);
         });
         static::created(function ($baza) {
             // Tworzymy użytkownika + bazę (MySQL/Postgres) tylko dla dodatkowych baz

@@ -10,6 +10,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -62,14 +63,18 @@ class BazyResource extends Resource
             Forms\Components\TextInput::make('username')
                 ->required()
                 ->label(__('filament.username'))
-                ->unique(ignoreRecord: true)
+                ->rule(function () {
+                    $prefix = auth()->user()->name . '_';
+                    return Rule::unique('bazies', 'username')
+                        ->ignore(null) // ignore rekordu przy tworzeniu
+                        ->where(fn($query) => $query->where('username', 'like', $prefix . '%'));
+                })
                 ->maxlength(6),
 
             Forms\Components\TextInput::make('db')
                 ->required()
                 ->label(__('filament.database_name'))
-                ->maxlength(6)
-                ->unique()(ignoreRecord: true),
+                ->maxlength(6),
 
             Forms\Components\Select::make('type')
                 ->options([
