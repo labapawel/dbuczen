@@ -42,9 +42,8 @@ class Bazy extends Model
             while (self::where('username', $baseUsername)->exists()) {
                 $baseUsername = $user->name . '_' . $baza->username . $counter++;
             }
-            $uniqueDb = $baseDb;
-            while (self::where('db', $uniqueDb)->exists()) {
-                $uniqueDb = $baseDb . $counter++;
+            while (self::where('db', $baseDb)->exists()) {
+                $baseDb = $user->name . '_' . $baza->db . $counter++;
             }
         
             // przypisanie do modelu
